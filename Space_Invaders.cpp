@@ -9,13 +9,10 @@
 
 #ifdef __APPLE__
 #include <OpenGL/gl.h>
-#else
-#include <GL/gl.h>
-#endif
-
-#ifdef __APPLE__
+#include <OpenGL/glu.h>
 #include <GLUT/glut.h>
 #else
+#include <GL/gl.h>
 #include <GL/glut.h>
 #endif
 
@@ -24,7 +21,7 @@
 
 
 // Declaração de variáveis globais
-GLfloat misselNave_y = 0;
+GLfloat misselNave_y = 0, misselNave_x = 0;
 GLfloat aviao_x = 0, missel1_tx = 0, missel2_tx = 0;
 
 bool missel1_moving = false, missel2_moving = false;
@@ -45,16 +42,16 @@ void DesenhaAviao() {
 	glColor3f(1.0f, 0.0f, 1.0f);
 	glLineWidth(2);
 	glBegin(GL_TRIANGLES);
-	glVertex2f(-1.0f, -1.0f);
-	glVertex2f(1.0f, -1.0f);
-	glVertex2f(0.0f, 0.0f);
+		glVertex2f(-1.0f, -1.0f);
+		glVertex2f(1.0f, -1.0f);
+		glVertex2f(0.0f, 0.0f);
 	glEnd();
 
 	glBegin(GL_QUADS);
-	glVertex2f(0.2f, -0.2f);
-	glVertex2f(0.2f, 0.5f);
-	glVertex2f(-0.2f, 0.5f);
-	glVertex2f(-0.2f, -0.2f);
+		glVertex2f(0.2f, -0.2f);
+		glVertex2f(0.2f, 0.5f);
+		glVertex2f(-0.2f, 0.5f);
+		glVertex2f(-0.2f, -0.2f);
 	glEnd();
 }
 
@@ -64,11 +61,11 @@ void DesenhaMisseis() {
 	glColor3f(0.0f, 0.0f, 0.0f);
 	glLineWidth(2);
 	glBegin(GL_POLYGON);
-	glVertex2f(-1.0f, -1.0f);
-	glVertex2f(-1.0f, -0.7f);
-	glVertex2f(-0.9f, -0.6f);
-	glVertex2f(-0.8f, -0.7f);
-	glVertex2f(-0.8f, -1.0f);
+		glVertex2f(-1.0f, -1.0f);
+		glVertex2f(-1.0f, -0.7f);
+		glVertex2f(-0.9f, -0.6f);
+		glVertex2f(-0.8f, -0.7f);
+		glVertex2f(-0.8f, -1.0f);
 	glEnd();
 }
            
@@ -150,9 +147,7 @@ void TeclasEspeciais(int key, int x, int y)
 		aviao_x += 0.1;
 	}
 	if (key == GLUT_KEY_UP) {
-		
 		glutTimerFunc(10, move_misselNave, 1);
-
 	}
                                                 
 	glutPostRedisplay();
@@ -163,15 +158,23 @@ void Teclado(unsigned char key, int x, int y)
 {
 	if (key == 27)
 		exit(0);
+	if (key == 'a')
+		aviao_x -= 0.1;
+	if (key == 'd')
+		aviao_x += 0.1;
+	if (key == 'w')
+		glutTimerFunc(10, move_misselNave, 1);
+	
+	glutPostRedisplay();
 }
            
 // Função responsável por inicializar parâmetros e variáveis
-void Inicializa (void)
+void Inicializa(void)
 {   
 	// Define a cor de fundo da janela de visualização como branca
 	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 	gluOrtho2D (-1.0f, 1.0f, -1.0f, 1.0f);
-  	gluOrtho2D(0, 1300, 0, 800);      
+  gluOrtho2D(0, 1300, 0, 800);      
 }
 
 
@@ -183,7 +186,7 @@ int main(int argc, char* argv[])
 	glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB);  
 	glutInitWindowPosition(5,5);     
 	glutInitWindowSize(1300, 800); 
-	glutCreateWindow("Desenho de um protótipo de jatinho do Space Invaders!"); 
+	glutCreateWindow("Desenho de um prototipo de jatinho do Space Invaders!"); 
  
 	// Registra a função callback de redesenho da janela de visualização
 	glutDisplayFunc(Desenha);  
@@ -195,7 +198,7 @@ int main(int argc, char* argv[])
 	glutSpecialFunc(TeclasEspeciais);
 
 	// Registra a função callback para tratamento das teclas ASCII
-	glutKeyboardFunc (Teclado);
+	glutKeyboardFunc(Teclado);
 
 	// Chama a função responsável por fazer as inicializações 
 	Inicializa(); 
