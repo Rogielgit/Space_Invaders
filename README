@@ -1,0 +1,4 @@
+g++ -Wall -W Space_Invaders.cpp  -lglut -lGL -lGLU -lm -o Space_Invaders
+./Space_Invaders
+
+Para atirar aperte o botao UP
