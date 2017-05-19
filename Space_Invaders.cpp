@@ -1,8 +1,11 @@
 //******************************************************************************
 //
-// Aula de Computação Gráfica ICMC - USP (18/05/2017)
-//
-
+// 	Aula de Computação Gráfica ICMC - USP (18/05/2017)
+// 
+// 	Bruno Pinto Ferraz Fabbri 			4154844
+// 	Frederico de Oliveira Sampaio		8922100
+// 	Nícolas Bassetto Leite 					8937292
+//	Rogiel dos Santos Silva 				8061793
 // 
 //******************************************************************************
 
@@ -21,8 +24,17 @@
 
 
 // Declaração de variáveis globais
-GLfloat misselNave_y = 0, misselNave_x = 0;
+GLfloat misselNave_y = -1.0f, misselNave_x = 0.1f;
 GLfloat aviao_x = 0, missel1_tx = 0, missel2_tx = 0;
+
+// tamanho das entidades da nave
+GLfloat triangle_scale = 10.0f, quad_scale = 10.0f; // Alterar a escala para redimensionar a nave
+GLfloat triangle = 1.0f/triangle_scale, quad1 = 0.2f/quad_scale, quad2 = 0.5f/quad_scale;
+
+// tamanho do missel
+GLfloat missel_scale = 10.0f; // Alterar a escala para redimensionar o missel
+GLfloat missel1 = 1.0f/missel_scale, missel2 = 0.7f/missel_scale, missel3 = 0.8f/missel_scale, missel4 = 0.6f/missel_scale, missel5 = 0.9f/missel_scale;
+
 
 bool missel1_moving = false, missel2_moving = false;
 
@@ -42,16 +54,16 @@ void DesenhaAviao() {
 	glColor3f(1.0f, 0.0f, 1.0f);
 	glLineWidth(2);
 	glBegin(GL_TRIANGLES);
-		glVertex2f(-1.0f, -1.0f);
-		glVertex2f(1.0f, -1.0f);
+		glVertex2f(-triangle, -triangle);
+		glVertex2f(triangle, -triangle);
 		glVertex2f(0.0f, 0.0f);
 	glEnd();
 
 	glBegin(GL_QUADS);
-		glVertex2f(0.2f, -0.2f);
-		glVertex2f(0.2f, 0.5f);
-		glVertex2f(-0.2f, 0.5f);
-		glVertex2f(-0.2f, -0.2f);
+		glVertex2f(quad1, -quad1);
+		glVertex2f(quad1, quad2);
+		glVertex2f(-quad1, quad2);
+		glVertex2f(-quad1, -quad1);
 	glEnd();
 }
 
@@ -61,11 +73,11 @@ void DesenhaMisseis() {
 	glColor3f(0.0f, 0.0f, 0.0f);
 	glLineWidth(2);
 	glBegin(GL_POLYGON);
-		glVertex2f(-1.0f, -1.0f);
-		glVertex2f(-1.0f, -0.7f);
-		glVertex2f(-0.9f, -0.6f);
-		glVertex2f(-0.8f, -0.7f);
-		glVertex2f(-0.8f, -1.0f);
+		glVertex2f(-missel1, -missel1);
+		glVertex2f(-missel1, -missel2);
+		glVertex2f(-missel5, -missel4);
+		glVertex2f(-missel3, -missel2);
+		glVertex2f(-missel3, -missel1);
 	glEnd();
 }
            
@@ -86,11 +98,11 @@ void Desenha(void)
 	/*Posicao do aviao*/
 	glTranslatef(aviao_x,0.0f,0.0f);
 	glTranslatef(0.0f,-0.7f,0.0f);
-	glScalef(0.3f,0.3f,0.0f);
+	// glScalef(0.3f,0.3f,0.0f);
 	glPushMatrix();
 
 	//Missel 1
-	glTranslatef(1.0f,misselNave_y+1.1f, 0.0f); // a soma na misselNave_y e a posicao inicial do tiro
+	glTranslatef(misselNave_x, misselNave_y+1.1f, 0.0f); // a soma na misselNave_y e a posicao inicial do tiro
 	DesenhaMisseis();
 
 	glPopMatrix();	
@@ -141,12 +153,26 @@ void TeclasEspeciais(int key, int x, int y)
 {
 	// Move a base
 	if (key == GLUT_KEY_LEFT){
+
+		// Move aviao
 		aviao_x -= 0.1;
+		
+		// Move missel se ele ja foi disparado
+		if(missel1_moving == true)
+			misselNave_x += 0.1;
 	}
+
 	if (key == GLUT_KEY_RIGHT){
+	
+		// Move aviao
 		aviao_x += 0.1;
+
+		// Move missel se ele ja foi disparado
+		if(missel1_moving == true)
+			misselNave_x -= 0.1;
 	}
 	if (key == GLUT_KEY_UP) {
+		missel1_moving = true;
 		glutTimerFunc(10, move_misselNave, 1);
 	}
                                                 
