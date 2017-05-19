@@ -21,6 +21,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 
 
 // Declaração de variáveis globais
@@ -35,11 +36,67 @@ GLfloat triangle = 1.0f/triangle_scale, quad1 = 0.2f/quad_scale, quad2 = 0.5f/qu
 GLfloat missel_scale = 10.0f; // Alterar a escala para redimensionar o missel
 GLfloat missel1 = 1.0f/missel_scale, missel2 = 0.7f/missel_scale, missel3 = 0.8f/missel_scale, missel4 = 0.6f/missel_scale, missel5 = 0.9f/missel_scale;
 
+// Alien
+GLfloat alien = 0.05f;
+
+// Variaveis para caminhar com a matriz de aliens
+GLint counter = 0, right_or_left = 1, line_down = 1;
 
 bool missel1_moving = false, missel2_moving = false;
 
+// Vetor para controlar se o alien esta morto (marcar com 0 quando ele morrer)
+bool alien_is_live [25] = {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1};
+
 int msec_missel1 = 0, msec_missel2 = 0;
 
+
+// Função para desenhar os aliens           
+void DesenhaAlien() {
+
+	glColor3f(1.0f, 0.0f, 0.0f);
+	glLineWidth(2);
+
+	// Incrementa o contador e translada a matriz de aliens 
+	counter += right_or_left;
+	if(counter == 8 || counter == 0){
+		right_or_left = -right_or_left;
+		counter += right_or_left;
+		line_down++;
+	}
+
+	glTranslatef(0.1f*floor(counter/1),-0.1f*line_down,0.0f);
+	
+
+	// Vai para o ponto inicial em cima na esquerda
+	glTranslatef(-1.0f,1.0f,0.0f);
+
+	// Desce a linha a cada 5 aliens
+	for(int i = 0; i < 5; i++){
+		// Vai indo para a direita a cada alien
+		for(int j = 0; j < 5; j++){
+			if(alien_is_live[j+5*i] == 1){
+				glBegin(GL_QUADS);
+					glVertex2f(alien, -alien);
+					glVertex2f(alien, alien);
+					glVertex2f(-alien, alien);
+					glVertex2f(-alien, -alien);
+				glEnd();
+			}
+
+			glTranslatef(0.3f,0.0f,0.0f);
+		}
+
+		// Volta para a esquerda e desce para a linha de baixo
+		glTranslatef(-1.5f,-0.2f,0.0f);
+	}
+
+	// Volta o tanto que foi transladado para desenhar a matriz de aliens
+	glTranslatef(-0.1f*floor(counter/1),0.1f*line_down,0.0f);
+	
+	
+	// Retorna ao ponto em que estava no inicio da funcao
+	glTranslatef(0.8f,-0.2f,0.0f);
+}
 
 void move_misselNave(int passo){
 
@@ -51,7 +108,7 @@ void move_misselNave(int passo){
 // Função para desenhar o jatinho           
 void DesenhaAviao() {
 
-	glColor3f(1.0f, 0.0f, 1.0f);
+	glColor3f(1.0f, 1.0f, 0.0f);
 	glLineWidth(2);
 	glBegin(GL_TRIANGLES);
 		glVertex2f(-triangle, -triangle);
@@ -80,6 +137,8 @@ void DesenhaMisseis() {
 		glVertex2f(-missel3, -missel1);
 	glEnd();
 }
+
+
            
 // Função callback de redesenho da janela de visualização
 void Desenha(void)
@@ -92,13 +151,13 @@ void Desenha(void)
 	// Limpa a janela de visualização com a cor  
 	// de fundo definida previamente
 	glClear(GL_COLOR_BUFFER_BIT);
-	
+
+	DesenhaAlien();
 	
 
 	/*Posicao do aviao*/
 	glTranslatef(aviao_x,0.0f,0.0f);
 	glTranslatef(0.0f,-0.7f,0.0f);
-	// glScalef(0.3f,0.3f,0.0f);
 	glPushMatrix();
 
 	//Missel 1
@@ -148,36 +207,46 @@ void AlteraTamanhoJanela(GLsizei w, GLsizei h)
 	}             
 }
 
+void tecla_direita() {
+	// Move aviao para direita
+	aviao_x += 0.1;
+
+	// Move missel se ele ja foi disparado
+	if(missel1_moving == true)
+		misselNave_x -= 0.1;
+}
+
+void tecla_esquerda() {
+	// Move aviao para esquerda
+	aviao_x -= 0.1;
+	
+	// Move missel se ele ja foi disparado
+	if(missel1_moving == true)
+		misselNave_x += 0.1;
+}
+
+void tecla_cima() {
+	missel1_moving = true;
+	glutTimerFunc(10, move_misselNave, 1);
+}
+
 // Função callback chamada para gerenciar eventos de teclas especiais(F1,PgDn,...)
 void TeclasEspeciais(int key, int x, int y)
 {
 	// Move a base
-	if (key == GLUT_KEY_LEFT){
+	if (key == GLUT_KEY_LEFT)
+		tecla_esquerda();
 
-		// Move aviao
-		aviao_x -= 0.1;
-		
-		// Move missel se ele ja foi disparado
-		if(missel1_moving == true)
-			misselNave_x += 0.1;
-	}
+	if (key == GLUT_KEY_RIGHT)
+		tecla_direita();
 
-	if (key == GLUT_KEY_RIGHT){
-	
-		// Move aviao
-		aviao_x += 0.1;
+	if (key == GLUT_KEY_UP) 
+		tecla_cima();
 
-		// Move missel se ele ja foi disparado
-		if(missel1_moving == true)
-			misselNave_x -= 0.1;
-	}
-	if (key == GLUT_KEY_UP) {
-		missel1_moving = true;
-		glutTimerFunc(10, move_misselNave, 1);
-	}
-                                                
+
 	glutPostRedisplay();
 }
+
 
 // Função callback chamada para gerenciar eventos de teclas
 void Teclado(unsigned char key, int x, int y)
@@ -185,11 +254,11 @@ void Teclado(unsigned char key, int x, int y)
 	if (key == 27)
 		exit(0);
 	if (key == 'a')
-		aviao_x -= 0.1;
+		tecla_esquerda();
 	if (key == 'd')
-		aviao_x += 0.1;
+		tecla_direita();
 	if (key == 'w')
-		glutTimerFunc(10, move_misselNave, 1);
+		tecla_cima();
 	
 	glutPostRedisplay();
 }
@@ -200,7 +269,7 @@ void Inicializa(void)
 	// Define a cor de fundo da janela de visualização como branca
 	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 	gluOrtho2D (-1.0f, 1.0f, -1.0f, 1.0f);
-  gluOrtho2D(0, 1300, 0, 800);      
+  gluOrtho2D(0, 1300, 0, 800);
 }
 
 
