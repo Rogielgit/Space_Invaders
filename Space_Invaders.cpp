@@ -4,8 +4,8 @@
 // 
 // 	Bruno Pinto Ferraz Fabbri 			4154844
 // 	Frederico de Oliveira Sampaio		8922100
-// 	Nícolas Bassetto Leite 					8937292
-//	Rogiel dos Santos Silva 				8061793
+// 	Nícolas Bassetto Leite 				8937292
+//	Rogiel dos Santos Silva 			8061793
 // 
 //******************************************************************************
 
@@ -21,6 +21,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <math.h>
 
 
@@ -40,7 +41,7 @@ GLfloat missel1 = 1.0f/missel_scale, missel2 = 0.7f/missel_scale, missel3 = 0.8f
 GLfloat alien = 0.05f;
 
 // Variaveis para caminhar com a matriz de aliens
-GLint counter = 0, right_or_left = 1, line_down = 1;
+GLint counter = 0, right_or_left = 1, line_down = 1, quantTiros = 0;
 
 bool missel1_moving = false, missel2_moving = false;
 
@@ -55,14 +56,16 @@ void DesenhaAlien() {
 
 	glColor3f(1.0f, 0.0f, 0.0f);
 	glLineWidth(2);
+	
+	printf("teste\n"); // ta em loop
 
 	// Incrementa o contador e translada a matriz de aliens 
-	counter += right_or_left;
-	if(counter == 8 || counter == 0){
+	//counter += right_or_left;
+	/*if(counter == 8 || counter == 0){
 		right_or_left = -right_or_left;
 		counter += right_or_left;
 		line_down++;
-	}
+	}*/
 
 	glTranslatef(0.1f*floor(counter/1),-0.1f*line_down,0.0f);
 	
@@ -96,6 +99,11 @@ void DesenhaAlien() {
 	
 	// Retorna ao ponto em que estava no inicio da funcao
 	glTranslatef(0.8f,-0.2f,0.0f);
+	if (counter == 8) // manda para o inicio do lado esquerdo
+	{
+		counter = 0;
+	}
+	
 }
 
 void move_misselNave(int passo){
@@ -103,6 +111,8 @@ void move_misselNave(int passo){
 	misselNave_y += (1.0*passo)/100;
 	glutPostRedisplay();
 	glutTimerFunc(10, move_misselNave, passo);
+
+
 }
 
 // Função para desenhar o jatinho           
@@ -154,10 +164,12 @@ void Desenha(void)
 
 	DesenhaAlien();
 	
+	
 
 	/*Posicao do aviao*/
 	glTranslatef(aviao_x,0.0f,0.0f);
 	glTranslatef(0.0f,-0.7f,0.0f);
+
 	glPushMatrix();
 
 	//Missel 1
@@ -168,6 +180,7 @@ void Desenha(void)
 
 	//Aviao	
 	DesenhaAviao();
+
 	
 	
 	// Executa os comandos OpenGL 
@@ -206,6 +219,12 @@ void AlteraTamanhoJanela(GLsizei w, GLsizei h)
 	//	win = 1.0f*largura/altura;           
 	}             
 }
+void movimentoAlien(int passo)
+{
+	counter++;
+	glutTimerFunc(5000, movimentoAlien, 1); // define aqui a velocidade do alien
+
+}
 
 void tecla_direita() {
 	// Move aviao para direita
@@ -225,10 +244,22 @@ void tecla_esquerda() {
 		misselNave_x += 0.1;
 }
 
-void tecla_cima() {
+void tecla_cima(){
+
+
+
 	missel1_moving = true;
+	glutPostRedisplay();
+	quantTiros++;
+	if (quantTiros % 10 == 0) // a cada 5 tiros desce uma coluna
+	{
+		line_down++;
+	}
 	glutTimerFunc(10, move_misselNave, 1);
+	glutTimerFunc(1, movimentoAlien, 1);
 }
+
+
 
 // Função callback chamada para gerenciar eventos de teclas especiais(F1,PgDn,...)
 void TeclasEspeciais(int key, int x, int y)
@@ -269,7 +300,7 @@ void Inicializa(void)
 	// Define a cor de fundo da janela de visualização como branca
 	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 	gluOrtho2D (-1.0f, 1.0f, -1.0f, 1.0f);
-  gluOrtho2D(0, 1300, 0, 800);
+  	gluOrtho2D(0, 1300, 0, 800);
 }
 
 
