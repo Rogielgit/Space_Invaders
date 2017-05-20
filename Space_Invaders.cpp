@@ -41,7 +41,7 @@ GLfloat missel1 = 1.0f/missel_scale, missel2 = 0.7f/missel_scale, missel3 = 0.8f
 GLfloat alien = 0.05f;
 
 // Variaveis para caminhar com a matriz de aliens
-GLint counter = 0, right_or_left = 1, line_down = 1, quantTiros = 0;
+GLint counter = 0, right_or_left = 1, line_down = 1, quantTiros = 0 , flag = 0, velocidadeAlien = 6400;
 
 bool missel1_moving = false, missel2_moving = false;
 
@@ -57,7 +57,7 @@ void DesenhaAlien() {
 	glColor3f(1.0f, 0.0f, 0.0f);
 	glLineWidth(2);
 	
-	printf("teste\n"); // ta em loop
+	//printf("teste\n"); // ta em loop
 
 	// Incrementa o contador e translada a matriz de aliens 
 	//counter += right_or_left;
@@ -109,8 +109,11 @@ void DesenhaAlien() {
 void move_misselNave(int passo){
 
 	misselNave_y += (1.0*passo)/100;
+	printf("passo : %f  -- %d\n ", misselNave_y,  passo);
+	if (misselNave_y >= 2)
+		misselNave_y = -1;
 	glutPostRedisplay();
-	glutTimerFunc(10, move_misselNave, passo);
+	glutTimerFunc(14, move_misselNave, passo); // 14 eh a velocidade do tiro
 
 
 }
@@ -222,7 +225,8 @@ void AlteraTamanhoJanela(GLsizei w, GLsizei h)
 void movimentoAlien(int passo)
 {
 	counter++;
-	glutTimerFunc(5000, movimentoAlien, 1); // define aqui a velocidade do alien
+	
+	glutTimerFunc(velocidadeAlien, movimentoAlien, 1); // define aqui a velocidade do alien
 
 }
 
@@ -249,14 +253,20 @@ void tecla_cima(){
 
 
 	missel1_moving = true;
-	glutPostRedisplay();
+	
 	quantTiros++;
-	if (quantTiros % 10 == 0) // a cada 5 tiros desce uma coluna
-	{
-		line_down++;
+	if (quantTiros % 7 == 0){ // a cada 5 tiros desce uma coluna
+		line_down++; // colocar um delemitador
+		velocidadeAlien = velocidadeAlien/2; // velocidade com que sera dividida
 	}
-	glutTimerFunc(10, move_misselNave, 1);
-	glutTimerFunc(1, movimentoAlien, 1);
+	glutPostRedisplay();
+	
+	if (flag == 0){
+		glutTimerFunc(1, movimentoAlien, 1);
+		glutTimerFunc(1, move_misselNave, 1);
+		flag = 1;	
+	}
+	
 }
 
 
