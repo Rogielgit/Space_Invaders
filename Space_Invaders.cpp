@@ -38,7 +38,7 @@ GLfloat missel_scale = 10.0f; // Alterar a escala para redimensionar o missel
 GLfloat missel1 = 1.0f/missel_scale, missel2 = 0.7f/missel_scale, missel3 = 0.8f/missel_scale, missel4 = 0.6f/missel_scale, missel5 = 0.9f/missel_scale;
 
 // Alien
-GLfloat alien = 0.05f;
+GLfloat alien = 0.05f, posiAliensx = 0.0f, posiAliensy = 0.0f, posiAliens_x[25], posiAliens_y[25];
 
 // Variaveis para caminhar com a matriz de aliens
 GLint counter = 0, right_or_left = 1, line_down = 1, quantTiros = 0 , flag = 0, velocidadeAlien = 4500, numeTiro = 0;
@@ -48,8 +48,8 @@ bool missel1_moving = false, missel2_moving = false;
 // Vetor para controlar se o alien esta morto (marcar com 0 quando ele morrer)
 bool alien_is_live [25] = {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1};
 bool tiroNave [10] = {1,1,1,1,1,1,1,1,1,1};
-GLfloat misselNave_y[10] = {-1,-1,-1,-1,-1,-1,-1,-1,-1,-1};
-GLfloat misselNave_x[10] = {0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1};
+GLfloat misselNave_y[10];
+GLfloat misselNave_x[10];
 
 int msec_missel1 = 0, msec_missel2 = 0;
 
@@ -60,41 +60,63 @@ void DesenhaAlien() {
 	glColor3f(1.0f, 0.0f, 0.0f);
 	glLineWidth(2);
 	
-	//printf("teste\n"); // ta em loop
-
-	// Incrementa o contador e translada a matriz de aliens 
-	//counter += right_or_left;
-	/*if(counter == 8 || counter == 0){
-		right_or_left = -right_or_left;
-		counter += right_or_left;
-		line_down++;
-	}*/
-
-	glTranslatef(0.1f*floor(counter/1),-0.1f*line_down,0.0f);
+	glTranslatef(0.1f*counter,-0.1f*line_down,0.0f);
 	
 
 	// Vai para o ponto inicial em cima na esquerda
 	glTranslatef(-1.0f,1.0f,0.0f);
 
 	// Desce a linha a cada 5 aliens
-	for(int i = 0; i < 5; i++){
-		// Vai indo para a direita a cada alien
-		for(int j = 0; j < 5; j++){
-			if(alien_is_live[j+5*i] == 1){
-				glBegin(GL_QUADS);
-					glVertex2f(alien, -alien);
-					glVertex2f(alien, alien);
-					glVertex2f(-alien, alien);
-					glVertex2f(-alien, -alien);
-				glEnd();
-			}
-
-			glTranslatef(0.3f,0.0f,0.0f);
+	for(int i = 0; i < 25; i++){
+		if(alien_is_live[i] == 1){
+			glBegin(GL_QUADS);
+				glVertex2f(alien, -alien);
+				glVertex2f(alien, alien);
+				glVertex2f(-alien, alien);
+				glVertex2f(-alien, -alien);
+			glEnd();
+			posiAliens_x[i] = posiAliensx - 1.0f + (0.1f*counter);
+			posiAliens_y[i] = posiAliensy + 1.8 - (0.1f*line_down); // posicao dos aliens em y  
+			posiAliensx += 0.3f;
+			
+		}
+		glTranslatef(0.3f,0.0f,0.0f); // espaco entre os blocos
+		if ((i+1)%5 == 0 ){
+			posiAliensy += -0.2f; // posicao dos aliens em y  
+			glTranslatef(-1.5f,-0.2f,0.0f);	// Volta para a esquerda e desce para a linha de baixo		
+			posiAliensx = 0.0f;
 		}
 
-		// Volta para a esquerda e desce para a linha de baixo
-		glTranslatef(-1.5f,-0.2f,0.0f);
+		for (int j = 0; j < 10; j++)
+		{
+			if (tiroNave[j] == 0) // tiro esta ativo
+			{
+				//printf("posiAliens_x %0.2f & posiAliens_y %0.2f\n", posiAliens_x[i], posiAliens_y[i]);
+				//printf("x = %0.2f e y = %0.2f\n",misselNave_x[i], misselNave_y[i]);
+
+			
+				if ((misselNave_x[j] >= posiAliens_x[i])  && (misselNave_x[j] <= posiAliens_x[i] + 0.1))
+				{
+					if ((misselNave_y[j] >= posiAliens_y[i]) && misselNave_y[j] <= posiAliens_y[j] + 0.1){
+						alien_is_live[i] = 0;
+						tiroNave[j] = 1;
+						//printf("posiAliens_x %0.2f & posiAliens_y %0.2f\n", posiAliens_x[i],posiAliens_y[i]);
+						//printf("x = %0.2f e y = %0.2f\n",misselNave_x[i], misselNave_y[i]);
+						//printf("certo\n");
+
+					}	
+				}
+			}
+			if (misselNave_y[j] >= 2) // altura da tela
+			{
+				//misselNave_y[j] = -1.0;
+				//misselNave_x[j] = 0.1;
+				tiroNave[j] = 1; // volta ao inicio.
+			}
+
+		}
 	}
+	posiAliensy = 0.0f;
 
 	// Volta o tanto que foi transladado para desenhar a matriz de aliens
 	glTranslatef(-0.1f*floor(counter/1),0.1f*line_down,0.0f);
@@ -112,17 +134,18 @@ void DesenhaAlien() {
 void move_misselNave(int passo){
 	
 	int i;
-	for (i = 0; i < 10; i++){
-		if (tiroNave[i] == 0){
+	for (i = 0; i < 10; i++)
+	{
+		if (tiroNave[i] == 0)
+		{
 			misselNave_y[i] += (1.0*passo)/100;
-			//printf("passo : %f  -- %d\n ", misselNave_y,  passo);
-			if (misselNave_y[i] >= 2) // altura da tela
+			//printf("tiro_y: %0.2f  -- tiro_x :%0.2f\n ", misselNave_y[i], misselNave_x[i]);
+			/*if (misselNave_y[i] >= 2) // altura da tela
 			{
 				misselNave_y[i] = -1;
 				misselNave_x[i] = 0.1;
 				tiroNave[i] = 1; // volta ao inicio.
-
-			}
+			}*/
 		
 		}
 	}
@@ -198,19 +221,20 @@ void Desenha(void)
 	glPushMatrix();
 
 	//Missel 1
+	glLoadIdentity();
 
 	for( i= 0; i < 10; i++){
 		if (tiroNave[i] == 0)
 		{	
 
 			glPushMatrix();
-			glTranslatef(misselNave_x[i], misselNave_y[i]+1.1f, 0.0f); // a soma na misselNave_y e a posicao inicial do tiro
+			glTranslatef(misselNave_x[i], misselNave_y[i], 0.0f); // a soma na misselNave_y e a posicao inicial do tiro
+			//printf("x = %0.2f e y = %0.2f\n",misselNave_x[i], misselNave_y[i]);
+
 			DesenhaMisseis();
 			glPopMatrix();
 		}
-	}
-
-	
+	}	
 
 	glPopMatrix();	
 
@@ -258,7 +282,6 @@ void AlteraTamanhoJanela(GLsizei w, GLsizei h)
 void movimentoAlien(int passo)
 {
 	counter++;
-	printf("velocidadeAlien %d\n",velocidadeAlien);
 	glutTimerFunc(velocidadeAlien, movimentoAlien, 1); // define aqui a velocidade do alien
 
 }
@@ -270,10 +293,10 @@ void tecla_direita() {
 
 	// Move missel se ele ja foi disparado
 
-	for( i= 0; i < 10; i++){
+	/*for( i= 0; i < 10; i++){
 		if (tiroNave[i] == 0)
 			misselNave_x[i] -= 0.1;	
-	}
+	}*/
 }
 
 void tecla_esquerda() {
@@ -282,30 +305,29 @@ void tecla_esquerda() {
 	aviao_x -= 0.1;
 	
 	// Move missel se ele ja foi disparado
-	for( i= 0; i < 10; i++){
+/*	for( i= 0; i < 10; i++){
 		if (tiroNave[i] == 0)
 			misselNave_x[i] += 0.1;	
 		
-	}
+	}*/
 }
 
 void tecla_cima(){
 
-
-
 	missel1_moving = true;
 	
 	quantTiros++;
-	if (quantTiros % 7 == 0){ // a cada 5 tiros desce uma coluna
+	if (quantTiros % 10 == 0){ // a cada 5 tiros desce uma coluna
 		line_down++; // colocar um delemitador
 		velocidadeAlien-= 200; // velocidade dos aliens a cada 7 tiros 
 	}
 	tiroNave[numeTiro] = 0; // para desenhar
+	misselNave_x[numeTiro] = aviao_x - 0.1f; // posicao na hora do tiro;
+	misselNave_y[numeTiro] = -0.8f;
 	numeTiro++;	
 	
 	if (numeTiro == 10)
 		numeTiro = 0;
-
 	glutPostRedisplay();
 	
 	if (flag == 0){ // para chamar somente uma vez as funcoes abaixo
@@ -357,8 +379,8 @@ void Inicializa(void)
 {   
 	// Define a cor de fundo da janela de visualização como branca
 	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-	gluOrtho2D (-1.0f, 1.0f, -1.0f, 1.0f);
   	gluOrtho2D(0, 1300, 0, 800);
+  	  glMatrixMode(GL_PROJECTION); // Especificações de observação de cena
 }
 
 
@@ -368,7 +390,7 @@ int main(int argc, char* argv[])
 {
 	glutInit(&argc, argv); // Inicia uma instância da glut
 	glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB);  
-	glutInitWindowPosition(5,5);     
+	//glutInitWindowPosition(1300,800);     
 	glutInitWindowSize(1300, 800); 
 	glutCreateWindow("Desenho de um prototipo de jatinho do Space Invaders!"); 
  
