@@ -75,47 +75,42 @@ void DesenhaAlien() {
 				glVertex2f(-alien, alien);
 				glVertex2f(-alien, -alien);
 			glEnd();
-			posiAliens_x[i] = posiAliensx - 1.0f + (0.1f*counter);
-			posiAliens_y[i] = posiAliensy + 1.8 - (0.1f*line_down); // posicao dos aliens em y  
-			posiAliensx += 0.3f;
-			
 		}
+		posiAliens_x[i] = posiAliensx - 1.0f + (0.1f*counter);
+		posiAliens_y[i] = posiAliensy + 2.0 - (0.1f*line_down); // posicao dos aliens em y  
+		posiAliensx += 0.3f;
 		glTranslatef(0.3f,0.0f,0.0f); // espaco entre os blocos
 		if ((i+1)%5 == 0 ){
 			posiAliensy += -0.2f; // posicao dos aliens em y  
 			glTranslatef(-1.5f,-0.2f,0.0f);	// Volta para a esquerda e desce para a linha de baixo		
 			posiAliensx = 0.0f;
 		}
-
 		for (int j = 0; j < 10; j++)
 		{
-			if (tiroNave[j] == 0) // tiro esta ativo
+			if (tiroNave[j] == 0 && alien_is_live[i] == 1) // tiro esta ativo
 			{
-				//printf("posiAliens_x %0.2f & posiAliens_y %0.2f\n", posiAliens_x[i], posiAliens_y[i]);
-				//printf("x = %0.2f e y = %0.2f\n",misselNave_x[i], misselNave_y[i]);
-
 			
 				if ((misselNave_x[j] >= posiAliens_x[i])  && (misselNave_x[j] <= posiAliens_x[i] + 0.1))
 				{
 					if ((misselNave_y[j] >= posiAliens_y[i]) && misselNave_y[j] <= posiAliens_y[j] + 0.1){
 						alien_is_live[i] = 0;
 						tiroNave[j] = 1;
-						//printf("posiAliens_x %0.2f & posiAliens_y %0.2f\n", posiAliens_x[i],posiAliens_y[i]);
-						//printf("x = %0.2f e y = %0.2f\n",misselNave_x[i], misselNave_y[i]);
-						//printf("certo\n");
+						glutPostRedisplay();
+
+					//	printf("posiAliens_x %0.2f & posiAliens_y %0.2f\n", posiAliens_x[i],posiAliens_y[i]);
+						//printf("x = %0.2f e y = %0.2f\n",misselNave_x[j], misselNave_y[j]);
+					//	printf("certo\n");
 
 					}	
 				}
 			}
 			if (misselNave_y[j] >= 2) // altura da tela
-			{
-				//misselNave_y[j] = -1.0;
-				//misselNave_x[j] = 0.1;
 				tiroNave[j] = 1; // volta ao inicio.
-			}
+			
 
 		}
 	}
+	//printf("saiu\n");
 	posiAliensy = 0.0f;
 
 	// Volta o tanto que foi transladado para desenhar a matriz de aliens
@@ -139,20 +134,11 @@ void move_misselNave(int passo){
 		if (tiroNave[i] == 0)
 		{
 			misselNave_y[i] += (1.0*passo)/100;
-			//printf("tiro_y: %0.2f  -- tiro_x :%0.2f\n ", misselNave_y[i], misselNave_x[i]);
-			/*if (misselNave_y[i] >= 2) // altura da tela
-			{
-				misselNave_y[i] = -1;
-				misselNave_x[i] = 0.1;
-				tiroNave[i] = 1; // volta ao inicio.
-			}*/
-		
+	//		printf("tiro_y: %0.2f  -- tiro_x :%0.2f\n ", misselNave_y[i], misselNave_x[i]);
 		}
 	}
 	glutPostRedisplay();
 	glutTimerFunc(14, move_misselNave, passo); // 14 eh a velocidade do tiro
-
-
 }
 
 // Função para desenhar o jatinho           
@@ -287,34 +273,24 @@ void movimentoAlien(int passo)
 }
 
 void tecla_direita() {
-	int i;
+
 	// Move aviao para direita
-	aviao_x += 0.1;
-
-	// Move missel se ele ja foi disparado
-
-	/*for( i= 0; i < 10; i++){
-		if (tiroNave[i] == 0)
-			misselNave_x[i] -= 0.1;	
-	}*/
+	if (aviao_x >= 1.15);
+	else
+		aviao_x += 0.05;
 }
 
 void tecla_esquerda() {
-	int i;
-	// Move aviao para esquerda
-	aviao_x -= 0.1;
+
+	if (aviao_x <= -0.8);
+	else
+		aviao_x -= 0.05;
 	
-	// Move missel se ele ja foi disparado
-/*	for( i= 0; i < 10; i++){
-		if (tiroNave[i] == 0)
-			misselNave_x[i] += 0.1;	
-		
-	}*/
 }
 
 void tecla_cima(){
 
-	missel1_moving = true;
+
 	
 	quantTiros++;
 	if (quantTiros % 10 == 0){ // a cada 5 tiros desce uma coluna
@@ -335,11 +311,7 @@ void tecla_cima(){
 		glutTimerFunc(1, move_misselNave, 1);
 		flag = 1;	
 	}
-	
-	
 }
-
-
 
 // Função callback chamada para gerenciar eventos de teclas especiais(F1,PgDn,...)
 void TeclasEspeciais(int key, int x, int y)
